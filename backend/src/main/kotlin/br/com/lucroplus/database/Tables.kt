@@ -1,0 +1,107 @@
+package br.com.lucroplus.database
+
+import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.kotlin.datetime.date
+
+object UsuariosTable : Table("tb_usuario") {
+    val id = long("id").autoIncrement()
+    val nome = varchar("nome", 100)
+    val email = varchar("email", 150).uniqueIndex()
+    val senhaHash = varchar("senha_hash", 255)
+    val tipo = varchar("tipo", 20)
+    val ativo = bool("ativo").default(true)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object ProdutosTable : Table("tb_produto") {
+    val id = long("id").autoIncrement()
+    val nome = varchar("nome", 150)
+    val descricao = text("descricao").nullable()
+    val preco = decimal("preco", 8, 2)
+    val categoria = varchar("categoria", 80)
+    val ativo = bool("ativo").default(true)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object IngredientesTable : Table("tb_ingrediente") {
+    val id = long("id").autoIncrement()
+    val nome = varchar("nome", 100)
+    val unidade = varchar("unidade", 20)
+    val estoqueMinimo = decimal("estoque_minimo", 8, 3).default(0.0.toBigDecimal())
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object LotesTable : Table("tb_lote") {
+    val id = long("id").autoIncrement()
+    val ingredienteId = long("ingrediente_id").references(IngredientesTable.id)
+    val quantidade = decimal("quantidade", 10, 3)
+    val custoUnitario = decimal("custo_unitario", 8, 4)
+    val dataValidade = date("data_validade")
+    val dataEntrada = date("data_entrada")
+    val numeroLote = varchar("numero_lote", 50).nullable()
+    val observacao = text("observacao").nullable()
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object FichasTecnicasTable : Table("tb_ficha_tecnica") {
+    val produtoId = long("produto_id").references(ProdutosTable.id)
+    val ingredienteId = long("ingrediente_id").references(IngredientesTable.id)
+    val quantidadeUsada = decimal("quantidade_usada", 10, 4)
+    val unidade = varchar("unidade", 20)
+
+    override val primaryKey = PrimaryKey(produtoId, ingredienteId)
+}
+
+object VendasTable : Table("tb_venda") {
+    val id = long("id").autoIncrement()
+    val usuarioId = long("usuario_id").references(UsuariosTable.id).nullable()
+    val dataVenda = date("data_venda")
+    val valorTotal = decimal("valor_total", 10, 2)
+    val origem = varchar("origem", 20).default("importado")
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object ItensVendaTable : Table("tb_item_venda") {
+    val id = long("id").autoIncrement()
+    val vendaId = long("venda_id").references(VendasTable.id)
+    val produtoId = long("produto_id").references(ProdutosTable.id)
+    val quantidade = integer("quantidade")
+    val precoUnitario = decimal("preco_unitario", 8, 2)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object PromocoesTable : Table("tb_promocao") {
+    val id = long("id").autoIncrement()
+    val produtoId = long("produto_id").references(ProdutosTable.id)
+    val descontoPct = integer("desconto_pct")
+    val motivo = text("motivo")
+    val status = varchar("status", 20)
+    val dataSugestao = date("data_sugestao")
+    val dataAtivacao = date("data_ativacao").nullable()
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AlertasTable : Table("tb_alerta") {
+    val id = long("id").autoIncrement()
+    val loteId = long("lote_id").references(LotesTable.id)
+    val tipo = varchar("tipo", 30)
+    val mensagem = text("mensagem")
+    val dataAlerta = date("data_alerta")
+    val visualizado = bool("visualizado").default(false)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object ConfiguracoesTable : Table("tb_configuracao") {
+    val chave = varchar("chave", 100)
+    val valor = varchar("valor", 255).nullable()
+
+    override val primaryKey = PrimaryKey(chave)
+}

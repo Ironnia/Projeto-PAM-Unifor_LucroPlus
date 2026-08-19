@@ -1,0 +1,50 @@
+﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import PrivateRoute from './components/PrivateRoute';
+import Layout from './components/Layout/Layout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Importacao from './pages/Importacao/Importacao';
+import Alertas from './pages/Alertas/Alertas';
+import Promocoes from './pages/Promocoes/Promocoes';
+import Relatorios from './pages/Relatorios/Relatorios';
+import Configuracoes from './pages/Configuracoes/Configuracoes';
+
+// Serão feitas nas próximas Sprints é só para estruturar tudo.
+function Usuarios() { return <div><h2><span className="material-symbols-outlined" style={{fontSize: '22px', marginRight: '6px', verticalAlign: 'middle'}}>group</span> Usuários (ADMIN)</h2></div>; }
+
+function App() {
+  return (
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+
+            <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Layout title="Dashboard" />
+                  </PrivateRoute>
+                }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="importacao" element={<Importacao />} />
+              <Route path="alertas" element={<Alertas />} />
+              <Route path="promocoes" element={<Promocoes />} />
+              <Route path="relatorios" element={<Relatorios />} />
+              <Route path="usuarios" element={<Usuarios />} />
+              <Route path="configuracoes" element={<Configuracoes />} />
+            </Route>
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+  );
+}
+
+export default App;
+
+
