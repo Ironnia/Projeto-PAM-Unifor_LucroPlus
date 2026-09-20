@@ -3,12 +3,12 @@
 -- ============================================================================
 
 -- 1. Total financeiro de desperdício por ingrediente (Mês Atual)
--- Lotes vencidos cujo mês/ano de vencimento seja o atual.
+-- Lotes vencidos cujo mês/ano de vencimento seja o atual (calculando com quantidade_g / 1000 se em kg).
 SELECT 
     i.nome AS ingrediente,
-    SUM(l.quantidade) AS quantidade_perdida,
+    SUM(l.quantidade_g) AS quantidade_perdida_g,
     i.unidade,
-    SUM(l.quantidade * l.custo_unitario) AS valor_perdido_rs
+    SUM((l.quantidade_g / 1000.0) * (l.custo_unitario * 1000.0)) AS valor_perdido_rs
 FROM tb_lote l
 JOIN tb_ingrediente i ON l.ingrediente_id = i.id
 WHERE l.data_validade < CURDATE()
@@ -22,7 +22,7 @@ ORDER BY valor_perdido_rs DESC;
 -- Agrupa os lotes vencidos pelo mês de validade
 SELECT 
     DATE_FORMAT(l.data_validade, '%Y-%m') AS mes_ano,
-    SUM(l.quantidade * l.custo_unitario) AS valor_perdido_rs
+    SUM(l.quantidade_g * l.custo_unitario) AS valor_perdido_rs
 FROM tb_lote l
 WHERE l.data_validade < CURDATE()
   AND l.data_validade >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)

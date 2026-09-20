@@ -4,7 +4,7 @@ SELECT
     i.nome AS ingrediente,
     l.data_validade,
     DATEDIFF(l.data_validade, CURDATE()) AS dias_para_vencer,
-    l.quantidade
+    l.quantidade_g
 FROM tb_lote l
 JOIN tb_ingrediente i ON l.ingrediente_id = i.id
 WHERE l.data_validade BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY)

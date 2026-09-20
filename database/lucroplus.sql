@@ -1,8 +1,3 @@
--- ============================================================================
--- LucroPlus — Esquema de Banco de Dados Relacional (MySQL 8.0)
--- Disciplina: N393 - Projeto Aplicado Multiplataforma (PAM) | Unifor
--- ============================================================================
-
 CREATE DATABASE IF NOT EXISTS lucroplus_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE lucroplus_db;
 
@@ -42,29 +37,30 @@ CREATE TABLE IF NOT EXISTS tb_produto
     INDEX idx_produto_ativo (ativo)
 );
 
--- 3. Ingredientes e Insumos
+-- 3. Ingredientes e Insumos (com peso_por_unidade_g para conversão limpa)
 CREATE TABLE IF NOT EXISTS tb_ingrediente
 (
-    id             BIGINT        NOT NULL AUTO_INCREMENT,
-    nome           VARCHAR(100)  NOT NULL,
-    unidade        VARCHAR(20)   NOT NULL,
-    estoque_minimo DECIMAL(8, 3) NOT NULL DEFAULT 0,
-    data_cadastro  TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
+    id                 BIGINT       NOT NULL AUTO_INCREMENT,
+    nome               VARCHAR(100) NOT NULL,
+    unidade            VARCHAR(20)  NOT NULL,
+    peso_por_unidade_g INTEGER      NOT NULL DEFAULT 1000,
+    estoque_minimo     INTEGER      NOT NULL DEFAULT 0,
+    data_cadastro      TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT pk_ingrediente PRIMARY KEY (id),
     INDEX idx_ingrediente_nome (nome),
     INDEX idx_ingrediente_unidade (unidade)
 );
 
--- 4. Lotes de Estoque com Validade e Custo
+-- 4. Lotes de Estoque com Validade e Custo (quantidade armazenada estritamente em gramas)
 CREATE TABLE IF NOT EXISTS tb_lote
 (
-    id             BIGINT         NOT NULL AUTO_INCREMENT,
-    ingrediente_id BIGINT         NOT NULL,
-    quantidade     DECIMAL(10, 3) NOT NULL,
-    custo_unitario DECIMAL(8, 4)  NOT NULL,
-    data_validade  DATE           NOT NULL,
-    data_entrada   DATE           NOT NULL,
+    id             BIGINT        NOT NULL AUTO_INCREMENT,
+    ingrediente_id BIGINT        NOT NULL,
+    quantidade_g   INTEGER       NOT NULL,
+    custo_unitario DECIMAL(8, 4) NOT NULL,
+    data_validade  DATE          NOT NULL,
+    data_entrada   DATE          NOT NULL,
     numero_lote    VARCHAR(50),
     observacao     TEXT,
 
@@ -193,30 +189,33 @@ VALUES ('X-Burguer Clássico', 'Hambúrguer artesanal com queijo, alface e tomat
        ('Torta Holandesa', 'Fatia de torta holandesa tradicional', 14.00, 'Sobremesas', TRUE)
 ON DUPLICATE KEY UPDATE preco = VALUES(preco);
 
--- Ingredientes do Estoque
-INSERT INTO tb_ingrediente (nome, unidade, estoque_minimo)
-VALUES ('Pão de Hambúrguer', 'un', 20),
-       ('Carne Moída (Blend)', 'kg', 5.000),
-       ('Queijo Mussarela', 'kg', 3.000),
-       ('Alface Americana', 'kg', 2.000),
-       ('Tomate', 'kg', 3.000),
-       ('Massa de Pizza', 'un', 10),
-       ('Molho de Tomate', 'kg', 2.000),
-       ('Manjericão Fresco', 'kg', 0.500),
-       ('Laranja', 'kg', 10.000)
+-- Ingredientes do Estoque (com peso_por_unidade_g)
+INSERT INTO tb_ingrediente (nome, unidade, peso_por_unidade_g, estoque_minimo)
+VALUES ('Pão de Hambúrguer', 'un', 80, 20),
+       ('Carne Moída (Blend)', 'kg', 1000, 5000),
+       ('Queijo Mussarela', 'kg', 1000, 3000),
+       ('Alface Americana', 'kg', 1000, 2000),
+       ('Tomate', 'kg', 1000, 3000),
+       ('Massa de Pizza', 'un', 300, 10),
+       ('Molho de Tomate', 'kg', 1000, 2000),
+       ('Manjericão Fresco', 'kg', 1000, 500),
+       ('Laranja', 'kg', 1000, 10000)
 ON DUPLICATE KEY UPDATE unidade = VALUES(unidade);
 
--- Lotes Ativos
-INSERT INTO tb_lote (ingrediente_id, quantidade, custo_unitario, data_validade, data_entrada, numero_lote, observacao)
-VALUES (1, 50, 1.2000, DATE_ADD(CURDATE(), INTERVAL 4 DAY), CURDATE(), 'LOT-PAO-01', 'Lote de pão fresco'),
-       (2, 10.000, 32.5000, DATE_ADD(CURDATE(), INTERVAL 2 DAY), CURDATE(), 'LOT-CARNE-01', 'Carne em risco de validade'),
-       (3, 8.000, 38.0000, DATE_ADD(CURDATE(), INTERVAL 3 DAY), CURDATE(), 'LOT-QUEIJO-01', 'Queijo mussarela'),
-       (4, 3.500, 8.0000, DATE_ADD(CURDATE(), INTERVAL 1 DAY), CURDATE(), 'LOT-ALFACE-01', 'Alface em vencimento crítico'),
-       (5, 5.000, 6.5000, DATE_ADD(CURDATE(), INTERVAL 5 DAY), CURDATE(), 'LOT-TOMATE-01', 'Tomate maduro'),
-       (6, 20, 4.0000, DATE_ADD(CURDATE(), INTERVAL 15 DAY), CURDATE(), 'LOT-MASSA-01', 'Massa pré-assada'),
-       (7, 4.000, 12.0000, DATE_ADD(CURDATE(), INTERVAL 20 DAY), CURDATE(), 'LOT-MOLHO-01', 'Molho caseiro'),
-       (8, 1.000, 25.0000, DATE_ADD(CURDATE(), INTERVAL 2 DAY), CURDATE(), 'LOT-MANJ-01', 'Ervas frescas'),
-       (9, 25.000, 4.5000, DATE_ADD(CURDATE(), INTERVAL 7 DAY), CURDATE(), 'LOT-LARANJA-01', 'Frutas da estação');
+-- Lotes Ativos (Valores de peso estritamente em gramas: quantidade_g)
+-- 11 lotes cadastrados com prazos variados (crítico <= 2 dias, atenção 3-5 dias, seguro > 5 dias)
+INSERT INTO tb_lote (ingrediente_id, quantidade_g, custo_unitario, data_validade, data_entrada, numero_lote, observacao)
+VALUES (1, 4000, 0.0150, DATE_ADD(CURDATE(), INTERVAL 4 DAY), CURDATE(), 'LOT-PAO-01', 'Lote de pão fresco'),
+       (2, 10000, 0.0325, DATE_ADD(CURDATE(), INTERVAL 2 DAY), CURDATE(), 'LOT-CARNE-01', 'Carne em risco de validade'),
+       (3, 8000, 0.0380, DATE_ADD(CURDATE(), INTERVAL 3 DAY), CURDATE(), 'LOT-QUEIJO-01', 'Queijo mussarela'),
+       (4, 3500, 0.0080, DATE_ADD(CURDATE(), INTERVAL 1 DAY), CURDATE(), 'LOT-ALFACE-01', 'Alface em vencimento crítico'),
+       (5, 5000, 0.0065, DATE_ADD(CURDATE(), INTERVAL 5 DAY), CURDATE(), 'LOT-TOMATE-01', 'Tomate maduro'),
+       (6, 6000, 0.0133, DATE_ADD(CURDATE(), INTERVAL 15 DAY), CURDATE(), 'LOT-MASSA-01', 'Massa pré-assada'),
+       (7, 4000, 0.0120, DATE_ADD(CURDATE(), INTERVAL 20 DAY), CURDATE(), 'LOT-MOLHO-01', 'Molho caseiro'),
+       (8, 1000, 0.0250, DATE_ADD(CURDATE(), INTERVAL 2 DAY), CURDATE(), 'LOT-MANJ-01', 'Ervas frescas'),
+       (9, 25000, 0.0045, DATE_ADD(CURDATE(), INTERVAL 7 DAY), CURDATE(), 'LOT-LARANJA-01', 'Frutas da estação'),
+       (2, 5000, 0.0330, DATE_ADD(CURDATE(), INTERVAL 10 DAY), CURDATE(), 'LOT-CARNE-02', 'Lote reserva carne'),
+       (3, 4000, 0.0375, DATE_ADD(CURDATE(), INTERVAL 12 DAY), CURDATE(), 'LOT-QUEIJO-02', 'Lote reserva queijo');
 
 -- Fichas Técnicas
 INSERT INTO tb_ficha_tecnica (produto_id, ingrediente_id, quantidade_usada, unidade)
