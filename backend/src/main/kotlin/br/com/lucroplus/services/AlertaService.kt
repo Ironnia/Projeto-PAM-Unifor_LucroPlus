@@ -42,7 +42,7 @@ object AlertaService {
 
             if (!alertaExiste) {
                 val ingredienteNome = row[IngredientesTable.nome]
-                val quantidade = row[LotesTable.quantidade]
+                val quantidade = row[LotesTable.quantidadeG]
                 val unidade = row[IngredientesTable.unidade]
                 val numeroLote = row[LotesTable.numeroLote] ?: "LOT-$loteId"
 
@@ -69,7 +69,7 @@ object AlertaService {
             .map {
                 val loteResumo = LoteResumoDto(
                     id = it[LotesTable.id],
-                    quantidade = it[LotesTable.quantidade].toDouble(),
+                    quantidade = it[LotesTable.quantidadeG].toDouble(),
                     custoUnitario = it[LotesTable.custoUnitario].toDouble(),
                     ingrediente = IngredienteResumoDto(
                         nome = it[IngredientesTable.nome],
@@ -90,9 +90,9 @@ object AlertaService {
     }
 
     suspend fun marcarComoVisualizado(alertaId: Long): Boolean = dbQuery {
-        val rowsUpdated = AlertasTable.update({ AlertasTable.id eq alertaId }) {
+        val linhasAfetadas = AlertasTable.update({ AlertasTable.id eq alertaId }) {
             it[visualizado] = true
         }
-        rowsUpdated > 0
+        linhasAfetadas > 0
     }
 }

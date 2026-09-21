@@ -149,7 +149,7 @@ object ImportacaoService {
             val hojeKmp = LocalDate.now().toKotlinLocalDate()
             LotesTable.insert {
                 it[LotesTable.ingredienteId] = ingredienteId
-                it[LotesTable.quantidade] = quantidade
+                it[LotesTable.quantidadeG] = quantidade.toInt()
                 it[LotesTable.custoUnitario] = custo
                 it[LotesTable.dataValidade] = dataValidade
                 it[LotesTable.dataEntrada] = hojeKmp
@@ -348,7 +348,7 @@ object ImportacaoService {
                 totalLinhas = 0,
                 linhasSucesso = 0,
                 linhasErro = 1,
-                erros = listOf(ErroImportacaoDto(1, "conexao", config.url, teste.mensagem))
+                erros = listOf(ErroImportacaoDto(1, "conexao", config.url ?: "", teste.mensagem))
             )
         }
     }

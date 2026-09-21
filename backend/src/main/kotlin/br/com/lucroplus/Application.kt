@@ -8,6 +8,7 @@ import br.com.lucroplus.routes.authRoutes
 import br.com.lucroplus.routes.configuracaoRoutes
 import br.com.lucroplus.routes.dashboardRoutes
 import br.com.lucroplus.routes.importacaoRoutes
+import br.com.lucroplus.routes.loteRoutes
 import br.com.lucroplus.routes.produtoRoutes
 import br.com.lucroplus.routes.promocaoRoutes
 import br.com.lucroplus.routes.relatorioRoutes
@@ -106,5 +107,6 @@ fun Application.module() {
         relatorioRoutes()
         configuracaoRoutes()
         importacaoRoutes()
+        loteRoutes()
     }
 }

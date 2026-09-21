@@ -8,10 +8,9 @@ import br.com.lucroplus.models.DesperdicioIngredienteDto
 import kotlinx.datetime.toKotlinLocalDate
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.Month
+import kotlin.math.round
 
 object RelatorioService {
 
@@ -31,9 +30,9 @@ object RelatorioService {
             .groupBy { it[IngredientesTable.nome] to it[IngredientesTable.unidade] }
             .map { (key, lotesDoIngrediente) ->
                 val (ingrediente, unidade) = key
-                val quantidadePerdida = lotesDoIngrediente.sumOf { it[LotesTable.quantidade].toDouble() }.roundTo(3)
+                val quantidadePerdida = lotesDoIngrediente.sumOf { it[LotesTable.quantidadeG].toDouble() }.roundTo(3)
                 val valorPerdidoRs = lotesDoIngrediente.sumOf {
-                    it[LotesTable.quantidade].toDouble() * it[LotesTable.custoUnitario].toDouble()
+                    it[LotesTable.quantidadeG].toDouble() * it[LotesTable.custoUnitario].toDouble()
                 }.roundTo(2)
 
                 DesperdicioIngredienteDto(
@@ -63,7 +62,7 @@ object RelatorioService {
                 data.year to data.month
             }
             .mapValues { (_, lotes) ->
-                lotes.sumOf { it[LotesTable.quantidade].toDouble() * it[LotesTable.custoUnitario].toDouble() }.roundTo(2)
+                lotes.sumOf { it[LotesTable.quantidadeG].toDouble() * it[LotesTable.custoUnitario].toDouble() }.roundTo(2)
             }
 
         val resultado = mutableListOf<DesperdicioHistoricoDto>()
@@ -75,13 +74,19 @@ object RelatorioService {
 
             resultado.add(
                 DesperdicioHistoricoDto(
-                    mesAno = label,
+                    mes = label,
                     valorPerdidoRs = valorPerdido
                 )
             )
         }
 
         resultado
+    }
+
+    private fun Double.roundTo(decimals: Int): Double {
+        var multiplier = 1.0
+        repeat(decimals) { multiplier *= 10 }
+        return round(this * multiplier) / multiplier
     }
 
     private fun Month.abreviacaoPtBr(): String = when (this) {
@@ -97,9 +102,5 @@ object RelatorioService {
         Month.OCTOBER -> "Out"
         Month.NOVEMBER -> "Nov"
         Month.DECEMBER -> "Dez"
-    }
-
-    private fun Double.roundTo(decimals: Int): Double {
-        return BigDecimal(this).setScale(decimals, RoundingMode.HALF_UP).toDouble()
     }
 }

@@ -29,6 +29,7 @@ object IngredientesTable : Table("tb_ingrediente") {
     val id = long("id").autoIncrement()
     val nome = varchar("nome", 100)
     val unidade = varchar("unidade", 20)
+    val pesoPorUnidadeG = integer("peso_por_unidade_g").default(1000)
     val estoqueMinimo = decimal("estoque_minimo", 8, 3).default(0.0.toBigDecimal())
 
     override val primaryKey = PrimaryKey(id)
@@ -37,7 +38,7 @@ object IngredientesTable : Table("tb_ingrediente") {
 object LotesTable : Table("tb_lote") {
     val id = long("id").autoIncrement()
     val ingredienteId = long("ingrediente_id").references(IngredientesTable.id)
-    val quantidade = decimal("quantidade", 10, 3)
+    val quantidadeG = integer("quantidade_g")
     val custoUnitario = decimal("custo_unitario", 8, 4)
     val dataValidade = date("data_validade")
     val dataEntrada = date("data_entrada")
