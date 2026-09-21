@@ -74,7 +74,7 @@ object RelatorioService {
 
             resultado.add(
                 DesperdicioHistoricoDto(
-                    mes = label,
+                    mesAno = label,
                     valorPerdidoRs = valorPerdido
                 )
             )
