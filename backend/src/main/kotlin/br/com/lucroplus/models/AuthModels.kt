@@ -9,9 +9,18 @@ data class LoginRequest(
 )
 
 @Serializable
+data class RegisterRequest(
+    val nome: String,
+    val email: String,
+    val senha: String,
+    val tipo: String = "GERENTE"
+)
+
+@Serializable
 data class LoginResponse(
     val token: String? = null,
     val expiresIn: Long? = null,
+    val id: Long? = null,
     val nome: String,
     val email: String,
     val tipo: String
@@ -23,5 +32,5 @@ data class UsuarioDto(
     val nome: String,
     val email: String,
     val tipo: String,
-    val ativo: Boolean
+    val ativo: Boolean = true
 )
