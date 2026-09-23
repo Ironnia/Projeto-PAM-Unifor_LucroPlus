@@ -1,16 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
+import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import EstoqueScreen from '../screens/EstoqueScreen';
 import PromocoesScreen from '../screens/PromocoesScreen';
 import ConfiguracoesScreen from '../screens/ConfiguracoesScreen';
+import { authApi } from '../services/api';
 
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const handleLogout = () => {
+    authApi.logout();
+    setIsAuthenticated(false);
+  };
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -46,6 +60,11 @@ export default function AppNavigator() {
           headerTitleStyle: {
             fontWeight: 'bold',
           },
+          headerRight: () => (
+            <TouchableOpacity onPress={handleLogout} style={{ marginRight: 16 }}>
+              <Ionicons name="log-out-outline" size={22} color="#ff5252" />
+            </TouchableOpacity>
+          ),
         })}
       >
         <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Dashboard' }} />
